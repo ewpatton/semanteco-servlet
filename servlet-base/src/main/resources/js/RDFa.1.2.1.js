@@ -1358,13 +1358,13 @@ RDFaPredicate.prototype.toString = function(options) {
                value += this.objects[i].value[x].nodeValue;
             }
          }
-         s += '"""'+value.replace(/"""/,"\\\"\\\"\\\"")+'"""^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>';
+         s += '"""'+value.replace(/"""/g,"\\\"\\\"\\\"")+'"""^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>';
       } else {
          var l = this.objects[i].value;
          if (l.indexOf("\n")>=0 || l.indexOf("\r")>=0) {
-            s += '"""' + l.replace(/"""/,"\\\"\\\"\\\"") + '"""';
+            s += '"""' + l.replace(/"""/g,"\\\"\\\"\\\"") + '"""';
          } else {
-            s += '"' + l.replace(/"/,"\\\"") + '"';
+            s += '"' + l.replace(/"/g,"\\\"") + '"';
          }
          if (this.objects[i].type!="http://www.w3.org/1999/02/22-rdf-syntax-ns#PlainLiteral") {
              s += "^^<"+this.objects[i].type+">";
