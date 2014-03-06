@@ -15,4 +15,13 @@
     <tag-class>edu.rpi.tw.escience.semanteco.taglib.core.StyleTag</tag-class>
     <body-content>empty</body-content>
   </tag>
+  <tag>
+    <name>property</name>
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+    </attribute>
+    <tag-class>edu.rpi.tw.escience.semanteco.taglib.core.PropertyTag</tag-class>
+    <body-content>empty</body-content>
+  </tag>
 </taglib>

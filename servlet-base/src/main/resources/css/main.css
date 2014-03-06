@@ -713,3 +713,14 @@ div#facets table.ui-state-highlight {
     padding: 0;
     margin: 0;
 }
+
+#buildNumber {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: block;
+    width: auto;
+    color: gray;
+    padding: 4px;
+    font-size: 8pt;
+}
