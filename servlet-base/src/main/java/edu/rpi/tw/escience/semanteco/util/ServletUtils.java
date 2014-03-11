@@ -207,6 +207,7 @@ public class ServletUtils {
 			if( result == null ) {
 				return;
 			}
+			response.setHeader("Content-Type", "text/plain");
 			log.debug("Response time: "+(System.currentTimeMillis()-start)+
 					" ms");
 			logger.debug("Returning response to client");

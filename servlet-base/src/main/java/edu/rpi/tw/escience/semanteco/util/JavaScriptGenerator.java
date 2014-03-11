@@ -117,7 +117,7 @@ public final class JavaScriptGenerator {
 		result.append(cls.getSimpleName());
 		result.append("/");
 		result.append(m.getName());
-		result.append("\",{\"data\":SemantEco.prepareArgs(a)");
+		result.append("\",{\"data\":SemantEco.prepareArgs(a),\"dataType\":\"text\"");
 		if(verb == HTTP.POST) {
 			result.append(",\"type\":\"POST\"");
 		}
