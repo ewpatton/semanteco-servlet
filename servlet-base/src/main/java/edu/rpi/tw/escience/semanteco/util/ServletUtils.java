@@ -20,7 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
@@ -302,21 +304,38 @@ public class ServletUtils {
 		return getIntCookie(request, "provenanceId");
 	}
 
+	private final void configureDefaultPattern() {
+        try {
+            BasicConfigurator.configure();
+            BasicConfigurator.configure(new FileAppender(new PatternLayout(), "/tmp/annotator.log"));
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+	}
+
 	private final void initLogger(ServletConfig config) {
 		final String log4jconfig =
 				config.getInitParameter("log4j-properties-location");
 		ServletContext context = config.getServletContext();
 		if(log4jconfig == null) {
-			BasicConfigurator.configure();
+			configureDefaultPattern();
+			log = Logger.getLogger(this.getClass());
+			log.warn("Unable to get log4j-properties-location from web.xml");
 		}
 		else {
 			String appPath = context.getRealPath("/");
+			if ( !appPath.endsWith(File.separator) ) {
+			    appPath += File.separatorChar;
+			}
 			String log4jpath = appPath + log4jconfig;
 			if(new File(log4jpath).exists()) {
 				PropertyConfigurator.configure(log4jpath);
 			}
 			else {
-				BasicConfigurator.configure();
+                configureDefaultPattern();
+                log = Logger.getLogger(this.getClass());
+                log.warn("Log4j config path does not exist");
+                log.warn("path = " + log4jpath);
 			}
 		}
         log = Logger.getLogger(this.getClass().getName());
