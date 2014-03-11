@@ -314,12 +314,12 @@ public class ServletUtils {
 			String log4jpath = appPath + log4jconfig;
 			if(new File(log4jpath).exists()) {
 				PropertyConfigurator.configure(log4jpath);
-				log = Logger.getLogger(this.getClass().getName());
 			}
 			else {
 				BasicConfigurator.configure();
 			}
 		}
+        log = Logger.getLogger(this.getClass().getName());
 	}
 
 	protected Module getModule(HttpServletRequest request) {
