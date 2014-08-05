@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -32,6 +33,8 @@ import edu.rpi.tw.escience.semanteco.Module;
 import edu.rpi.tw.escience.semanteco.ModuleManager;
 import edu.rpi.tw.escience.semanteco.QueryMethod;
 import edu.rpi.tw.escience.semanteco.Request;
+import edu.rpi.tw.escience.semanteco.User;
+import edu.rpi.tw.escience.semanteco.Permission;
 import edu.rpi.tw.escience.semanteco.i18n.Messages;
 import edu.rpi.tw.escience.semanteco.impl.ModuleManagerFactory;
 import edu.rpi.tw.escience.semanteco.request.ClientRequest;
@@ -148,6 +151,27 @@ public class ServletUtils {
 		JSONObject result = new JSONObject();
 		result.put("success", true);
 		result.put("results", arr);
+		return result.toString();
+	}
+	
+	// ** new User management thing **
+	@SuppressWarnings("unchecked")
+	private String serializeUser(User user) {
+		JSONObject theJSON = new JSONObject();
+		theJSON.put("username", user.getUsername());
+		theJSON.put("uri", user.getUri());
+		List<Permission> userPermissions = user.getPermissions();
+		Iterator<Permission> i = userPermissions.iterator();
+		JSONArray permArr = new JSONArray();
+		while(i.hasNext()){
+			permArr.put(i.next().toJSONObject());
+		}
+		theJSON.put("permissions", permArr);
+		JSONObject userPrefs = new JSONObject(user.getPreferences());
+		theJSON.put("prefs", userPrefs);
+		JSONObject result = new JSONObject();
+		result.put("success", true);
+		result.put("results", theJSON);
 		return result.toString();
 	}
 

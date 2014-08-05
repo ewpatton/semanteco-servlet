@@ -71,6 +71,9 @@ public class BaseSemantEcoServlet extends HttpServlet {
 		else if(request.getServletPath().startsWith("/rest")) {
 			utils.invokeRestCall(request, response);
 		}
+		else if(request.getServletPath().startsWith("/user")) {
+			// ** DO USER THINGS **
+		}
 		else {
 			ps = new PrintStream(response.getOutputStream(), true,
 					SemantEcoConfiguration.get().getEncoding());
