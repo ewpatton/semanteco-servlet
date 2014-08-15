@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -20,9 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
@@ -34,6 +33,9 @@ import edu.rpi.tw.escience.semanteco.Module;
 import edu.rpi.tw.escience.semanteco.ModuleManager;
 import edu.rpi.tw.escience.semanteco.QueryMethod;
 import edu.rpi.tw.escience.semanteco.Request;
+import edu.rpi.tw.escience.semanteco.User;
+import edu.rpi.tw.escience.semanteco.JSONUserStore;
+import edu.rpi.tw.escience.semanteco.Permission;
 import edu.rpi.tw.escience.semanteco.i18n.Messages;
 import edu.rpi.tw.escience.semanteco.impl.ModuleManagerFactory;
 import edu.rpi.tw.escience.semanteco.request.ClientRequest;
@@ -152,6 +154,55 @@ public class ServletUtils {
 		result.put("results", arr);
 		return result.toString();
 	}
+	
+	// ** new User management thing **
+	@SuppressWarnings("unchecked")
+	private String serializeUser(User user) {
+		JSONObject theJSON = new JSONObject();
+		theJSON.put("username", user.getUsername());
+		theJSON.put("uri", user.getUri());
+		List<Permission> userPermissions = user.getPermissions();
+		Iterator<Permission> i = userPermissions.iterator();
+		JSONArray permArr = new JSONArray();
+		while(i.hasNext()){
+			permArr.put(i.next().toJSONObject());
+		}
+		theJSON.put("permissions", permArr);
+		JSONObject userPrefs = new JSONObject(user.getPreferences());
+		theJSON.put("prefs", userPrefs);
+		JSONObject result = new JSONObject();
+		result.put("success", true);
+		result.put("results", theJSON);
+		return result.toString();
+	}// /serializeUser()
+	
+	public void fetchUser(HttpServletRequest request, HttpServletResponse response){
+		String identifier = request.getQueryString();
+		// We need to have an identifier to know which user to fetch
+		if(identifier == null){
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "[ERROR] No User identifier specified");
+		}
+		JSONUserStore us = new JSONUserStore();
+		User theUser = us.readUser(identifier);
+		if(theUser == null){
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "[ERROR] User does not exist");
+		}
+		try {
+			response.setHeader("Content-Type", "application/json");
+			PrintStream ps = new PrintStream(response.getOutputStream(), true,
+								SemantEcoConfiguration.get().getEncoding());
+			ps.print(serializeUser(theUser));
+			ps.close();
+		} catch (SecurityException e) {
+			logger.error("Unable to execute specified method", e);
+		} catch (IllegalArgumentException e) {
+			logger.error("Illegal argument", e);
+		} catch (IllegalAccessException e) {
+			logger.error("Illegal access", e);
+		} catch (InvocationTargetException e) {
+			logger.error("Invalid target for invocation", e);
+		}
+	}// /fetchUser
 
 	private String invokeHierarchyMethod(HttpServletResponse response,
 			ClientRequest logger, Module module, Method m)
@@ -209,7 +260,6 @@ public class ServletUtils {
 			if( result == null ) {
 				return;
 			}
-			response.setHeader("Content-Type", "text/plain");
 			log.debug("Response time: "+(System.currentTimeMillis()-start)+
 					" ms");
 			logger.debug("Returning response to client");
@@ -304,41 +354,24 @@ public class ServletUtils {
 		return getIntCookie(request, "provenanceId");
 	}
 
-	private final void configureDefaultPattern() {
-        try {
-            BasicConfigurator.configure();
-            BasicConfigurator.configure(new FileAppender(new PatternLayout(), "/tmp/annotator.log"));
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-	}
-
 	private final void initLogger(ServletConfig config) {
 		final String log4jconfig =
 				config.getInitParameter("log4j-properties-location");
 		ServletContext context = config.getServletContext();
 		if(log4jconfig == null) {
-			configureDefaultPattern();
-			log = Logger.getLogger(this.getClass());
-			log.warn("Unable to get log4j-properties-location from web.xml");
+			BasicConfigurator.configure();
 		}
 		else {
 			String appPath = context.getRealPath("/");
-			if ( !appPath.endsWith(File.separator) ) {
-			    appPath += File.separatorChar;
-			}
 			String log4jpath = appPath + log4jconfig;
 			if(new File(log4jpath).exists()) {
 				PropertyConfigurator.configure(log4jpath);
+				log = Logger.getLogger(this.getClass().getName());
 			}
 			else {
-                configureDefaultPattern();
-                log = Logger.getLogger(this.getClass());
-                log.warn("Log4j config path does not exist");
-                log.warn("path = " + log4jpath);
+				BasicConfigurator.configure();
 			}
 		}
-        log = Logger.getLogger(this.getClass().getName());
 	}
 
 	protected Module getModule(HttpServletRequest request) {
