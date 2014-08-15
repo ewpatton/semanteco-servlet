@@ -114,6 +114,10 @@ public class BaseSemantEcoServlet extends WebSocketServlet {
 	                clientStream, provenanceStream);
 	        utils.invokeRestCall(logger, request, response);
 		}
+		else if(request.getServletPath().startsWith("/user")) {
+			// fetch users using doGet()
+			utils.fetchUser(request, response);
+		}
 		else {
 			ps = new PrintStream(response.getOutputStream(), true,
 					SemantEcoConfiguration.get().getEncoding());
