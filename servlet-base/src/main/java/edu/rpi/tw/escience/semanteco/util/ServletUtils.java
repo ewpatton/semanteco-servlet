@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -176,7 +177,7 @@ public class ServletUtils {
 		return result.toString();
 	}// /serializeUser()
 	
-	public void fetchUser(HttpServletRequest request, HttpServletResponse response){
+	public void fetchUser(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException{
 		String identifier = request.getQueryString();
 		// We need to have an identifier to know which user to fetch
 		if(identifier == null){
@@ -194,13 +195,9 @@ public class ServletUtils {
 			ps.print(serializeUser(theUser));
 			ps.close();
 		} catch (SecurityException e) {
-			logger.error("Unable to execute specified method", e);
+			log.error("Unable to execute specified method", e);
 		} catch (IllegalArgumentException e) {
-			logger.error("Illegal argument", e);
-		} catch (IllegalAccessException e) {
-			logger.error("Illegal access", e);
-		} catch (InvocationTargetException e) {
-			logger.error("Invalid target for invocation", e);
+			log.error("Illegal argument", e);
 		}
 	}// /fetchUser
 
